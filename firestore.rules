@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Messages collection - only authenticated users can read and write
+    match /messages/{messageId} {
+      allow read, write: if request.auth != null;
+      allow create: if request.auth != null 
+        && request.auth.uid == resource.data.uid
+        && request.resource.data.keys().hasAll(['text', 'uid', 'displayName', 'timestamp'])
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 1000;
+    }
+    
+    // User profiles collection (optional for future use)
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

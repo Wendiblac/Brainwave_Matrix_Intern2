@@ -1,0 +1,172 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Chat App Design System - Modern messaging interface with warm, friendly colors */
+
+@layer base {
+  :root {
+    /* Background & Base Colors */
+    --background: 220 13% 98%;
+    --foreground: 222 20% 12%;
+
+    /* Card & Surface Colors */
+    --card: 0 0% 100%;
+    --card-foreground: 222 20% 12%;
+
+    /* Chat-specific colors */
+    --chat-primary: 217 89% 61%;        /* Vibrant blue for primary actions */
+    --chat-primary-foreground: 0 0% 100%;
+    --chat-secondary: 142 76% 36%;      /* Fresh green for online status */
+    --chat-accent: 48 100% 67%;         /* Warm yellow for highlights */
+    
+    /* Message bubble colors */
+    --message-sent: 217 89% 61%;        /* User's messages - blue */
+    --message-sent-foreground: 0 0% 100%;
+    --message-received: 210 40% 96%;    /* Other's messages - light gray */
+    --message-received-foreground: 222 20% 12%;
+
+    /* Standard semantic colors */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 20% 12%;
+
+    --primary: 217 89% 61%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 20% 12%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 48 100% 67%;
+    --accent-foreground: 222 20% 12%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 217 89% 61%;
+
+    --radius: 0.75rem;
+    
+    /* Chat-specific design tokens */
+    --chat-gradient: linear-gradient(135deg, hsl(217 89% 61%), hsl(217 89% 71%));
+    --chat-gradient-secondary: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
+    --message-gradient: linear-gradient(135deg, hsl(217 89% 61%), hsl(217 89% 71%));
+    --shadow-chat: 0 4px 20px -4px hsl(217 89% 61% / 0.3);
+    --shadow-message: 0 2px 8px -2px hsl(0 0% 0% / 0.1);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Dark theme optimized for chat */
+    --background: 222 20% 7%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 20% 10%;
+    --card-foreground: 210 40% 98%;
+
+    /* Chat colors in dark mode */
+    --chat-primary: 217 89% 71%;
+    --chat-primary-foreground: 222 20% 7%;
+    --chat-secondary: 142 76% 46%;
+    --chat-accent: 48 100% 77%;
+    
+    /* Message bubbles in dark mode */
+    --message-sent: 217 89% 71%;
+    --message-sent-foreground: 222 20% 7%;
+    --message-received: 217 32% 17%;
+    --message-received-foreground: 210 40% 98%;
+
+    --popover: 222 20% 10%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 89% 71%;
+    --primary-foreground: 222 20% 7%;
+
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 48 100% 77%;
+    --accent-foreground: 222 20% 7%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 217 89% 71%;
+    
+    /* Dark theme gradients */
+    --chat-gradient: linear-gradient(135deg, hsl(217 89% 71%), hsl(217 89% 81%));
+    --chat-gradient-secondary: linear-gradient(135deg, hsl(142 76% 46%), hsl(142 76% 56%));
+    --message-gradient: linear-gradient(135deg, hsl(217 89% 71%), hsl(217 89% 81%));
+    --shadow-chat: 0 4px 20px -4px hsl(217 89% 71% / 0.4);
+    --shadow-message: 0 2px 8px -2px hsl(0 0% 0% / 0.3);
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+/* Chat-specific utility classes */
+@layer components {
+  .message-bubble-sent {
+    @apply bg-message-sent text-message-sent-foreground rounded-2xl rounded-br-md px-4 py-2 max-w-[70%] ml-auto;
+    background: var(--message-gradient);
+    box-shadow: var(--shadow-message);
+  }
+  
+  .message-bubble-received {
+    @apply bg-message-received text-message-received-foreground rounded-2xl rounded-bl-md px-4 py-2 max-w-[70%] mr-auto;
+    box-shadow: var(--shadow-message);
+  }
+  
+  .chat-input {
+    @apply bg-card border-border rounded-full px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200;
+    transition: var(--transition-smooth);
+  }
+  
+  .chat-send-button {
+    @apply bg-primary text-primary-foreground rounded-full p-3 hover:scale-105 active:scale-95 shadow-lg;
+    background: var(--chat-gradient);
+    box-shadow: var(--shadow-chat);
+    transition: var(--transition-smooth);
+  }
+}
