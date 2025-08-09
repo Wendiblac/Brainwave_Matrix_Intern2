@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Chat App Design System */
+
+@layer base {
+  :root {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Chat primary colors - vibrant blue */
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 221 83% 48%;
+
+    /* Chat secondary colors */
+    --secondary: 240 5% 6%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 5% 6%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 4% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 85% 97%;
+
+    --border: 330 70% 70%;
+    --input: 330 70% 70%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.75rem;
+
+    /* Chat specific colors */
+    --chat-bubble-sent: 221 83% 53%;
+    --chat-bubble-received: 240 6% 20%;
+    --chat-input-bg: 240 5% 6%;
+    --navbar-bg: 240 10% 3.9%;
+    --sidebar-bg: 240 5% 6%;
+
+    /* Status colors */
+    --online: 142 76% 36%;
+    --offline: 240 5% 64.9%;
+    --typing: 48 96% 53%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%), hsl(261 83% 58%));
+    --gradient-card: linear-gradient(145deg, hsl(240 5% 6%), hsl(240 6% 20%));
+  }
+
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 221 83% 48%;
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 330 70% 70%;
+    --input: 330 70% 70%;
+    --ring: 221 83% 53%;
+
+    --chat-bubble-sent: 221 83% 53%;
+    --chat-bubble-received: 240 4.8% 95.9%;
+    --chat-input-bg: 0 0% 100%;
+    --navbar-bg: 0 0% 100%;
+    --sidebar-bg: 240 4.8% 95.9%;
+
+    --online: 142 76% 36%;
+    --offline: 240 3.8% 46.1%;
+    --typing: 48 96% 53%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%), hsl(261 83% 58%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(240 4.8% 95.9%));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
