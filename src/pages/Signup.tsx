@@ -12,31 +12,23 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
-import { db } from "@/lib/firebase"; // YOU FORGOT TO IMPORT THIS!
-import { setDoc, doc } from "firebase/firestore";
 
-const Signup = () => {
+const Signup: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
   const { signup, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password || !displayName || !confirmPassword) return;
-
-    if (password !== confirmPassword) {
-      alert("Passwords don't match!");
-      return;
-    }
-
-    if (password.length < 6) {
-      alert("Password must be at least 6 characters long!");
-      return;
-    }
+    if (password !== confirmPassword) return alert("Passwords don't match!");
+    if (password.length < 6)
+      return alert("Password must be at least 6 characters!");
 
     setLoading(true);
     try {
@@ -44,50 +36,41 @@ const Signup = () => {
       navigate("/");
     } catch (error) {
       console.error("Signup error:", error);
-      alert("Signup failed. Try again.");
+      alert("Signup failed. See console.");
     } finally {
       setLoading(false);
     }
   };
 
-const handleGoogleSignup = async () => {
-  setLoading(true);
-  try {
-    const userCredential = await loginWithGoogle(); // your context function should return this
-    const user = userCredential?.user;
-
-    if (!user) throw new Error("Google Auth failed");
-
-    // Write to Firestore
-    await setDoc(doc(db, "users", user.uid), {
-      uid: user.uid,
-      displayName: user.displayName,
-      email: user.email,
-      photoURL: user.photoURL,
-      createdAt: serverTimestamp(),
-    });
-
-    navigate("/");
-  } catch (error) {
-    console.error("Google signup error:", error);
-    alert("Google signup failed. Check console for details.");
-  } finally {
-    setLoading(false);
-  }
-};
+  const handleGoogleSignup = async () => {
+    setLoading(true);
+    try {
+      // AuthContext.loginWithGoogle now returns the User (or throws)
+      const user = await loginWithGoogle();
+      if (!user)
+        throw new Error("Google sign-in finished but no user returned.");
+      // No need to write users/{uid} here - AuthContext already did that.
+      navigate("/");
+    } catch (error) {
+      console.error("Google signup error:", error);
+      alert("Google signup failed. Check console for details.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-        <div className="bg-gradient-primary p-2 rounded-xl flex items-center justify-center mb-4">
-          <img
-            src="/logo.png"
-            alt="App Logo"
-            loading="lazy"
-            className="w-22 h-20"
-          />
-        </div>
+          <div className="bg-gradient-primary p-2 rounded-xl flex items-center justify-center mb-4">
+            <img
+              src="/logo.png"
+              alt="App Logo"
+              loading="lazy"
+              className="w-22 h-20"
+            />
+          </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Join the Chat
           </h1>

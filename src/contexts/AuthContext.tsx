@@ -22,7 +22,11 @@ interface AuthContextType {
     displayName: string
   ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  /**
+   * Returns the Firebase User on success, or throws on error.
+   * This makes it explicit so callers can use the returned user safely.
+   */
+  loginWithGoogle: () => Promise<User | null>;
   logout: () => Promise<void>;
 }
 
@@ -62,10 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         createdAt: serverTimestamp(),
       });
 
-      toast({
-        title: "Account created",
-        description: "Welcome aboard!",
-      });
+      toast({ title: "Account created", description: "Welcome aboard!" });
     } catch (error) {
       const err = error as FirebaseError;
       toast({
@@ -80,10 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
+      toast({ title: "Login successful", description: "Welcome back!" });
     } catch (error) {
       const err = error as FirebaseError;
       toast({
@@ -95,27 +93,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const loginWithGoogle = async () => {
+  // **IMPORTANT FIX**: return the User (not `{ user }`) and handle Firestore creation here.
+  const loginWithGoogle = async (): Promise<User | null> => {
     try {
-      const { user } = await signInWithPopup(auth, googleProvider);
-      const userDoc = await getDoc(doc(db, "users", user.uid));
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
 
+      // Create user doc if it doesn't exist (idempotent)
+      const userDoc = await getDoc(doc(db, "users", user.uid));
       if (!userDoc.exists()) {
         await setDoc(doc(db, "users", user.uid), {
           uid: user.uid,
-          displayName: user.displayName,
-          email: user.email,
+          displayName: user.displayName ?? null,
+          email: user.email ?? null,
           photoURL: user.photoURL ?? null,
           createdAt: serverTimestamp(),
         });
       }
 
-      toast({
-        title: "Login successful",
-        description: "Welcome with Google!",
-      });
-
-      return { user };
+      toast({ title: "Login successful", description: "Welcome with Google!" });
+      return user;
     } catch (error) {
       const err = error as FirebaseError;
       toast({
@@ -130,10 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = async () => {
     try {
       await signOut(auth);
-      toast({
-        title: "Logged out",
-        description: "You've been signed out.",
-      });
+      toast({ title: "Logged out", description: "You've been signed out." });
     } catch (error) {
       const err = error as FirebaseError;
       toast({
@@ -150,7 +144,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setCurrentUser(user);
       setLoading(false);
     });
-
     return unsubscribe;
   }, []);
 

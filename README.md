@@ -1,135 +1,125 @@
-# Firebase Chat Application - RealtieChatter
+# Firebase Private Chat App
 
-This is a real-time chat application built with **React (Vite)**, **TailwindCSS**, and **Firebase**. 
-It supports **Firebase Authentication** (Google & Email/Password), **Firestore messaging**, **private chats by email**, and **Firebase Hosting deployment**.
+This is a real-time private chat application built with React, Vite, TailwindCSS, and Firebase.  
+The app allows users to register/login with Google or Email/Password, search for other users by email, and start private conversations.
 
----
+## Features
+- Firebase Authentication (Google & Email/Password)
+- Firestore real-time private messaging
+- Search users by email and start 1-on-1 chats
+- General public chatroom
+- Responsive TailwindCSS UI
+- Deployed on Firebase Hosting
 
-## **Features**
-- User authentication with Google or Email/Password.
-- Real-time chat using Firebase Firestore.
-- Search for users by email and initiate chats.
-- Private messaging between two distinct accounts.
-- Fully responsive UI with TailwindCSS.
-- Hosted on Firebase Hosting.
+## Steps Taken
 
----
+### 1. Project Setup
+- Created a new Vite + React + TypeScript project using:
+  ```bash
+  npm create vite@latest sparkle-chat --template react-ts
+  cd sparkle-chat
+  npm install
+  ```
+- Installed required dependencies:
+  ```bash
+  npm install firebase tailwindcss postcss autoprefixer react-router-dom
+  ```
 
-## **Technologies Used**
-- React (Vite)
-- TailwindCSS
-- Firebase Authentication
-- Firebase Firestore
-- Firebase Hosting
+### 2. TailwindCSS Setup
+- Initialized TailwindCSS:
+  ```bash
+  npx tailwindcss init -p
+  ```
+- Updated `tailwind.config.cjs` content paths.
+- Added Tailwind directives to `index.css`.
 
----
+### 3. Firebase Setup
+- Created Firebase project in Firebase Console.
+- Enabled **Authentication** with Google and Email/Password providers.
+- Created **Firestore Database** (in test mode initially).
+- Created `src/firebase.ts` with Firebase configuration:
+  ```ts
+  import { initializeApp } from "firebase/app";
+  import { getAuth } from "firebase/auth";
+  import { getFirestore } from "firebase/firestore";
 
-## **Setup & Development Steps**
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID",
+  };
 
-### 1. **Initialize Vite + React Project**
-```bash
-npm create vite@latest realtiechatter
-cd realtiechatter
-npm install
+  const app = initializeApp(firebaseConfig);
+  export const auth = getAuth(app);
+  export const db = getFirestore(app);
+  ```
+
+### 4. Authentication Context
+- Created `AuthContext.tsx` to manage and persist user authentication state globally.
+- Used `onAuthStateChanged` to listen for login/logout events.
+
+### 5. Routing & Pages
+- Installed and configured `react-router-dom`.
+- Created pages:
+  - `Login.tsx` — Google and Email/Password sign-in.
+  - `Register.tsx` — Email/Password registration.
+  - `ChatRoom.tsx` — Displays general and private chats.
+  - `PrivateChat.tsx` — Dedicated component for private conversations.
+
+### 6. Firestore Messaging Logic
+- Created `messages` collection in Firestore.
+- For private chats, used `privateMessages` collection with documents named after combined user IDs:
+  ```ts
+  const chatId = [currentUser.uid, selectedUser.uid].sort().join("_");
+  ```
+- Implemented `onSnapshot` to get real-time message updates.
+- Added `sendMessage` function to push new messages to Firestore.
+
+### 7. User Search & Private Chat
+- Created a search bar in `ChatRoom.tsx`.
+- Queried Firestore `users` collection by email to find other registered users.
+- If found, allowed starting a private chat session.
+
+### 8. UI Enhancements
+- Styled components with TailwindCSS.
+- Added responsive design for mobile and desktop views.
+
+### 9. Deployment on Firebase Hosting
+- Installed Firebase CLI:
+  ```bash
+  npm install -g firebase-tools
+  ```
+- Logged in to Firebase:
+  ```bash
+  firebase login
+  ```
+- Initialized hosting:
+  ```bash
+  firebase init hosting
+  ```
+  - Selected existing Firebase project.
+  - Set `dist` as the public directory.
+  - Enabled single-page app rewrite.
+
+- Built and deployed:
+  ```bash
+  npm run build
+  firebase deploy
+  ```
+
+## Environment Variables
+Create a `.env` file in the root directory:
+```
+VITE_API_KEY=your_api_key
+VITE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+VITE_PROJECT_ID=your_project_id
+VITE_STORAGE_BUCKET=your_project_id.appspot.com
+VITE_MESSAGING_SENDER_ID=your_sender_id
+VITE_APP_ID=your_app_id
 ```
 
-### 2. **Install Dependencies**
-```bash
-npm install react@18 react-dom@18 firebase tailwindcss postcss autoprefixer
-```
-
-### 3. **Setup TailwindCSS**
-```bash
-npx tailwindcss init -p
-```
-Updated `tailwind.config.js` to include:
-```javascript
-content: [
-  "./index.html",
-  "./src/**/*.{js,ts,jsx,tsx}",
-],
-```
-
-Updated `index.css` to include:
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-```
-
-### 4. **Setup Firebase Project**
-- Created a Firebase project in the Firebase Console.
-- Enabled **Authentication** (Google & Email/Password).
-- Enabled **Firestore Database** (in test mode for development).
-- Copied Firebase config keys.
-
-Created `src/firebase.js`:
-```javascript
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-
-const firebaseConfig = {
-  apiKey: "MY_API_KEY",
-  authDomain: "MY_PROJECT_ID.firebaseapp.com",
-  projectId: "MY_PROJECT_ID",
-  storageBucket: "MY_PROJECT_ID.appspot.com",
-  messagingSenderId: "MY_MESSAGING_SENDER_ID",
-  appId: "MY_APP_ID"
-};
-
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-```
-
-### 5. **Setup Authentication Context**
-- Created `src/context/AuthContext.jsx` to handle authentication state globally.
-
-### 6. **Build Chat Components**
-- `Login.jsx` – Google & Email/Password login.
-- `Register.jsx` – Email registration.
-- `SearchUser.jsx` – Search users by email.
-- `ChatRoom.jsx` – Displays chat messages in real-time.
-- `SendMessage.jsx` – Send messages.
-- `Navbar.jsx` – Logout functionality.
-
-### 7. **Routing Setup**
-- Used `react-router-dom` to manage pages (`/login`, `/register`, `/chat`).
-
-### 8. **Firestore Messaging Logic**
-- When a chat is initiated, it creates a **chat document** in Firestore.
-- Messages are stored as subcollections inside the chat document.
-- Messages are fetched in real-time using `onSnapshot`.
-
-### 9. **Run the Development Server**
-```bash
-npm run dev
-```
-
-### 10. **Build for Production**
-```bash
-npm run build
-```
-
-### 11. **Deploy to Firebase Hosting**
-```bash
-npm install -g firebase-tools
-firebase login
-firebase init
-firebase deploy
-```
-
----
-
-## **Firebase Hosting Notes**
-- Used default `dist` directory for deployment.
-- Configured Firebase Hosting during `firebase init`.
-- App is accessible via Firebase's hosting URL or a custom domain.
-
----
-
-## **Author**
-Wendiblac – Cloud DevOps Engineer
-
----
+## License
+This project is licensed under the MIT License.
