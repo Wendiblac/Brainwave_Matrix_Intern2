@@ -1,14 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { collection, query, where, onSnapshot, orderBy, limit } from 'firebase/firestore';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageCircle, Plus, Users, Clock } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { useAuth } from '@/contexts/AuthContext';
-import Navbar from '@/components/Navbar';
-import { format } from 'date-fns';
+import React, { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+  limit,
+  doc,
+  getDoc,
+} from "firebase/firestore";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MessageCircle, Plus, Users, Clock } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { useAuth } from "@/contexts/AuthContext";
+import Navbar from "@/components/Navbar";
+import { format } from "date-fns";
 
 interface RecentChat {
   chatId: string;
@@ -24,10 +39,14 @@ const ChatHome = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
+  // Use refs to hold the latest general and private chats
+  const generalChatRef = useRef<RecentChat | null>(null);
+  const privateChatsRef = useRef<RecentChat[]>([]);
+
   useEffect(() => {
     if (!currentUser) return;
 
-    // Get recent messages from general chat
+    // GENERAL CHAT LISTENER
     const generalQuery = query(
       collection(db, "messages"),
       orderBy("timestamp", "desc"),
@@ -37,27 +56,24 @@ const ChatHome = () => {
     const unsubscribeGeneral = onSnapshot(generalQuery, (snapshot) => {
       if (!snapshot.empty) {
         const lastMessage = snapshot.docs[0].data();
-        const generalChat: RecentChat = {
+        generalChatRef.current = {
           chatId: "general",
           partnerName: "General Chat",
           lastMessage: lastMessage.text,
           lastMessageTime: lastMessage.timestamp?.toDate() || new Date(),
           isGeneral: true,
         };
-
-        setRecentChats((prev) => {
-          const filtered = prev.filter((chat) => chat.chatId !== "general");
-          return [generalChat, ...filtered].slice(0, 5);
-        });
+      } else {
+        generalChatRef.current = null;
       }
+      updateRecentChats();
     });
 
-    // ----------------
     // PRIVATE CHAT LISTENER
-    // ----------------
     const privateQuery = query(
       collection(db, "chats"),
       where("members", "array-contains", currentUser.uid),
+      where("type", "==", "private"), // <--- Make sure you have this!
       orderBy("updatedAt", "desc")
     );
 
@@ -95,12 +111,21 @@ const ChatHome = () => {
         });
       }
 
-      setRecentChats((prev) => {
-        // Keep general chat if it exists
-        const generalOnly = prev.filter((chat) => chat.isGeneral);
-        return [...generalOnly, ...privateChats];
-      });
+      privateChatsRef.current = privateChats;
+      updateRecentChats();
     });
+
+    // Helper to merge and sort chats
+    function updateRecentChats() {
+      const allChats = [
+        ...(generalChatRef.current ? [generalChatRef.current] : []),
+        ...privateChatsRef.current,
+      ];
+      allChats.sort(
+        (a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime()
+      );
+      setRecentChats(allChats.slice(0, 5));
+    }
 
     return () => {
       unsubscribeGeneral();
@@ -109,7 +134,7 @@ const ChatHome = () => {
   }, [currentUser]);
 
   const startNewChat = () => {
-    navigate('/new-chat');
+    navigate("/new-chat");
   };
 
   const openChat = (chatId: string) => {
@@ -119,7 +144,7 @@ const ChatHome = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <div className="max-w-4xl mx-auto p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
@@ -140,20 +165,18 @@ const ChatHome = () => {
                 </div>
                 Quick Start
               </CardTitle>
-              <CardDescription>
-                Jump right into chatting
-              </CardDescription>
+              <CardDescription>Jump right into chatting</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button 
-                onClick={() => openChat('general')} 
+              <Button
+                onClick={() => openChat("general")}
                 className="w-full flex items-center gap-2"
               >
                 <Users className="w-4 h-4" />
                 Join General Chat
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={startNewChat}
                 className="w-full flex items-center gap-2"
               >
@@ -172,9 +195,7 @@ const ChatHome = () => {
                 </div>
                 Recent Activity
               </CardTitle>
-              <CardDescription>
-                Your latest conversations
-              </CardDescription>
+              <CardDescription>Your latest conversations</CardDescription>
             </CardHeader>
             <CardContent>
               {recentChats.length === 0 ? (
@@ -198,7 +219,7 @@ const ChatHome = () => {
                           </div>
                         ) : (
                           <>
-                            <AvatarImage src={chat.partnerPhoto || ''} />
+                            <AvatarImage src={chat.partnerPhoto || ""} />
                             <AvatarFallback className="bg-primary text-primary-foreground">
                               {chat.partnerName.charAt(0)}
                             </AvatarFallback>
@@ -214,7 +235,7 @@ const ChatHome = () => {
                         </p>
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {format(chat.lastMessageTime, 'HH:mm')}
+                        {format(chat.lastMessageTime, "HH:mm")}
                       </div>
                     </div>
                   ))}
@@ -230,7 +251,9 @@ const ChatHome = () => {
             <div className="bg-gradient-primary p-3 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
               <MessageCircle className="w-6 h-6 text-white" />
             </div>
-            <h3 className="font-semibold text-foreground mb-2">Real-time Messaging</h3>
+            <h3 className="font-semibold text-foreground mb-2">
+              Real-time Messaging
+            </h3>
             <p className="text-sm text-muted-foreground">
               Send and receive messages instantly with live updates
             </p>
@@ -240,7 +263,9 @@ const ChatHome = () => {
             <div className="bg-gradient-primary p-3 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
               <Users className="w-6 h-6 text-white" />
             </div>
-            <h3 className="font-semibold text-foreground mb-2">Group & Private Chats</h3>
+            <h3 className="font-semibold text-foreground mb-2">
+              Group & Private Chats
+            </h3>
             <p className="text-sm text-muted-foreground">
               Chat in public rooms or start private conversations
             </p>
@@ -250,7 +275,9 @@ const ChatHome = () => {
             <div className="bg-gradient-primary p-3 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
               <Clock className="w-6 h-6 text-white" />
             </div>
-            <h3 className="font-semibold text-foreground mb-2">Message History</h3>
+            <h3 className="font-semibold text-foreground mb-2">
+              Message History
+            </h3>
             <p className="text-sm text-muted-foreground">
               Access your chat history anytime, anywhere
             </p>

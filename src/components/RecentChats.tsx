@@ -7,38 +7,45 @@ import {
   orderBy,
   onSnapshot,
 } from "firebase/firestore";
-import { db } from "../firebase";
-import { useAuth } from "../context/AuthContext";
+import { db } from "@/lib/firebase";
+import { useAuth } from "../contexts/AuthContext";
 
 interface Chat {
   id: string;
+  members: string[];
   name?: string;
-  participants: string[];
   type: "private" | "group";
   lastMessage?: string;
-  lastMessageTime?: { seconds: number; nanoseconds: number };
+  updatedAt?: { seconds: number; nanoseconds: number } | null;
 }
 
 export default function RecentChats() {
   const { currentUser } = useAuth();
-  const [chats, setChats] = useState<Chat[]>([]);
+  const [recentChats, setRecentChats] = useState<Chat[]>([]);
 
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser) return; // ✅ TS null safety
 
-    // Query chats where the current user is a participant
     const q = query(
       collection(db, "chats"),
-      where("participants", "array-contains", currentUser.email),
-      orderBy("lastMessageTime", "desc")
+      where("members", "array-contains", currentUser.uid),
+      orderBy("updatedAt", "desc")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const chatsData: Chat[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Chat[];
-      setChats(chatsData);
+      const chatsData: Chat[] = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          members: data.members || [],
+          type: data.type || "private",
+          name: data.name || "",
+          lastMessage: data.lastMessage || "",
+          updatedAt: data.updatedAt || null,
+        };
+      });
+
+      setRecentChats(chatsData);
     });
 
     return () => unsubscribe();
@@ -47,11 +54,11 @@ export default function RecentChats() {
   return (
     <div className="recent-chats">
       <h2 className="text-lg font-semibold mb-2">Recent Chats</h2>
-      {chats.length === 0 ? (
+      {recentChats.length === 0 ? (
         <p className="text-gray-500">No recent chats</p>
       ) : (
         <ul className="space-y-2">
-          {chats.map((chat) => (
+          {recentChats.map((chat) => (
             <li key={chat.id}>
               <Link
                 to={`/chat/${chat.id}`}
@@ -59,13 +66,18 @@ export default function RecentChats() {
               >
                 <div className="font-medium">
                   {chat.type === "private"
-                    ? chat.participants.find((p) => p !== currentUser.email) ||
+                    ? chat.members.find((m) => m !== currentUser?.uid) ||
                       "Unknown User"
                     : chat.name || "Unnamed Group"}
                 </div>
-                {chat.lastMessage && (
+
+                {chat.lastMessage ? (
                   <div className="text-sm text-gray-500 truncate">
                     {chat.lastMessage}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-400 italic">
+                    No messages yet
                   </div>
                 )}
               </Link>
