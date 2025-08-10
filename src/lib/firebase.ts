@@ -7,7 +7,7 @@ import { GoogleAuthProvider } from "firebase/auth";
 
 // Your Firebase config object (replace with actual keys from your project)
 const firebaseConfig = {
-  apiKey: "AIzaSyBAwQV-LqUpg0sRs0yp_9cHv_uZYV0z_BY",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "realtiechatter.firebaseapp.com",
   projectId: "realtiechatter",
   storageBucket: "realtiechatter.firebasestorage.app",
