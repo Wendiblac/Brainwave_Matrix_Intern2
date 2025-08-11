@@ -131,12 +131,7 @@ The app allows users to register/login with Google or Email/Password, search for
 Create a `.env` file in the root directory:
 
 ```
-VITE_API_KEY=MY_api_key
-VITE_AUTH_DOMAIN=MY_project_id.firebaseapp.com
-VITE_PROJECT_ID=MY_project_id
-VITE_STORAGE_BUCKET=MY_project_id.appspot.com
-VITE_MESSAGING_SENDER_ID=MY_sender_id
-VITE_APP_ID=MY_app_id
+VITE_FIREBASE_API_KEY=MY_api_key
 ```
 
 ## License
